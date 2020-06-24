@@ -48,6 +48,7 @@ bind_mount() {
     for wrt in "${WRITABLES[@]}" ; do
       if [[ "${wrt}" == "${src}" || -d "${src}" && "${wrt#${src}/}" != "${wrt}" ]] ; then
         is_writable=1
+        break
       fi
     done
     if [[ "${is_writable}" -eq 1 ]] ; then
