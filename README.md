@@ -41,3 +41,5 @@ The script will create the following structure:
 `/usr/bin ->` same as for `/etc`
 
 `/* ->` all directories are bind-mounted, all files are hard-symlinked 
+
+Any files that are created inside the fake root (i.e. not a hard link to the corresponding file on the real root), will be kept.
