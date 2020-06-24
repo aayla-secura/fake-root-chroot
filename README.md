@@ -27,7 +27,7 @@ It takes a list of directories or files which you want to be writable to your fa
 For example if you want a fake root where your fake `root` user has write access to `/usr/bin`, `/usr/lib64` and `/etc/hosts`, call the script with:
 
 ```
-fake-root-chroot.sh -w /etc/hosts -w /usr/lib64 -w /usr/bin /path/to/chroot
+fake-root-chroot.sh -w /etc/hosts /usr/lib64 /usr/bin -r /path/to/chroot
 ```
 
 The script will create the following structure:
