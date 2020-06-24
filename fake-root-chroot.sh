@@ -202,4 +202,21 @@ for m in "${MOUNTED[@]}" ; do
     rc="${this_rc}"
   fi
 done
-cmd find "${CHROOT}" \( ! -type d -o -empty \) -delete
+if [[ "${DRY_RUN}" -eq 0 ]] ; then
+  find "${CHROOT}" ! -type d |
+    while IFS= read fake_path ; do
+      real_path="${fake_path#${CHROOT}}"
+      if [[ -e "${real_path}" ]] ; then
+        fake_inode="$(stat --format '%i' "${fake_path}")"
+        real_inode="$(stat --format '%i' "${real_path}")"
+        if [[ "${fake_inode}" == "${real_inode}" ]] ; then
+          cmd rm "${fake_path}"
+        else
+          log INFO "${fake_path} differs from that on the real root, keeping"
+        fi
+      else
+        log INFO "${fake_path} does not exist on the real root, keeping"
+      fi
+    done
+fi
+cmd find "${CHROOT}" -empty -delete
