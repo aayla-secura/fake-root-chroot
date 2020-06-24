@@ -40,15 +40,15 @@ function _log() {
 }
 
 bind_mount() {
-  for target in "${@}" ; do
+  for src in "${@}" ; do
+    dest="${CHROOT}${src}"
+    is_writable=0
     for wrt in "${WRITABLES[@]}" ; do
-      if [[ "${wrt}" == "${target}" || -d "${target}" && "${wrt#${target}/}" != "${wrt}" ]] ; then
-        target=".orig_${target}"
+      if [[ "${wrt}" == "${src}" || -d "${src}" && "${wrt#${src}/}" != "${wrt}" ]] ; then
+        is_writable=1
       fi
     done
-    src="${target#.orig_}"
-    dest="${CHROOT}${target}"
-    if [[ "${src}" != "${target}" ]] ; then
+    if [[ "${is_writable}" -eq 1 ]] ; then
       if [[ -d "${src}" ]] ; then
         log INFO "${src} contains locations which should be writable"
         cmd mkdir "${CHROOT}${src}"
@@ -131,7 +131,7 @@ while [[ $# -gt 0 ]] ; do
       usage
       ;;
     -w)
-      if [[ -d "${target}" ]] ; then
+      if [[ -d "${2}" ]] ; then
         # ensure trailing /
         WRITABLES+=("${2%/}/")
       else
