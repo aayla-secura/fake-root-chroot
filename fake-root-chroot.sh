@@ -11,10 +11,12 @@ ${ANSI_BRIGHT}${ANSI_REVERSE}Usage:${ANSI_RESET}
 ${ANSI_BRIGHT}${BASH_SOURCE[0]}${ANSI_RESET} ${ANSI_FG_CYAN}[<options>]${ANSI_RESET} ${ANSI_BRIGHT}${ANSI_FG_GREEN}[<chroot dir>]${ANSI_RESET}
 
 ${ANSI_BRIGHT}${ANSI_REVERSE}Options:${ANSI_RESET}
-  ${ANSI_FG_CYAN}-n      ${ANSI_RESET}Dry run, only print what would be done (non-verbose by default)
-  ${ANSI_FG_CYAN}-v      ${ANSI_RESET}Verbose, print all commands that are/would be invoked
+  ${ANSI_FG_CYAN}-n      ${ANSI_RESET}Dry run, only print what would be done (non-verbose by default).
+  ${ANSI_FG_CYAN}-v      ${ANSI_RESET}Verbose, print all commands that are/would be invoked.
+  ${ANSI_FG_CYAN}-r DIR  ${ANSI_RESET}Use DIR as a fake root. Must be empty.
+          It is created if it doesn't exist.
   ${ANSI_FG_CYAN}-w DIR  ${ANSI_RESET}Add DIR to the lsit of directories which need to be writable to the
-          fake root
+          fake root.
 EOF
 exit 0
 }
@@ -130,25 +132,36 @@ while [[ $# -gt 0 ]] ; do
     -h)
       usage
       ;;
-    -w)
-      if [[ -d "${2}" ]] ; then
-        # ensure trailing /
-        WRITABLES+=("${2%/}/")
-      else
-        WRITABLES+=("${2}")
-      fi
+    -r)
+      CHROOT="${2%/}"
       shift
+      ;;
+    -w)
+      while [[ $# -gt 1 ]] ; do
+        case "${2}" in
+          -*)
+            break
+            ;;
+          *)
+            if [[ -d "${2}" ]] ; then
+              # ensure trailing /
+              WRITABLES+=("${2%/}/")
+            else
+              WRITABLES+=("${2}")
+            fi
+            ;;
+        esac
+        shift
+      done
       ;;
     -*)
       log ERROR "Unknown option ${1}"
       usage
       ;;
     *)
-      if [[ -n "${CHROOT}" ]] ; then
-        log ERROR "Extra argument ${1}"
-        usage
-      fi
-      CHROOT="${1%/}"
+      log ERROR "Unknown argument ${1}"
+      usage
+      ;;
   esac
   shift
 done
@@ -189,4 +202,4 @@ for m in "${MOUNTED[@]}" ; do
     rc="${this_rc}"
   fi
 done
-find "${CHROOT}" \( ! -type d -o -empty \) -delete
+cmd find "${CHROOT}" \( ! -type d -o -empty \) -delete
